@@ -8,7 +8,7 @@ import (
 
 // Keywords recognized by the lexer (case-insensitive matching, stored uppercase).
 var keywords = map[string]bool{
-	"USE": true, "DATABASE": true, "MAP": true, "SCOPE": true, "MODEL": true,
+	"USE": true, "DATABASE": true, "MAP": true, "MODEL": true,
 	"SEARCH": true, "WHERE": true, "UPDATE": true, "PRELOAD": true,
 	"GET": true, "DATABASES": true, "MAPS": true, "MODELS": true,
 	"AND": true, "OR": true, "NOT": true, "IN": true, "OUT": true,

@@ -137,21 +137,12 @@ func (s *StorageManager) loadMap(mapDir string, db *cache.Database) (*cache.GeoM
 		path := filepath.Join(mapDir, lf.Name())
 		layerName := strings.TrimSuffix(lf.Name(), "."+cache.LayerPrefix)
 
-		if lf.IsDir() {
-			layer := cache.NewLayer(layerName, geoMap.NodeSize(), geoMap.Threshold())
-			if err := s.loadSubmapLayer(path, layer, geoMap); err != nil {
-				s.Logger.Error("load submap layer failed", "path", path, "error", err)
-				continue
-			}
-			geoMap.Layers[layerName] = layer
-		} else {
-			layer, err := s.loadElementLayer(path, layerName, geoMap.NodeSize(), geoMap.Threshold())
-			if err != nil {
-				s.Logger.Error("load element layer failed", "path", path, "error", err)
-				continue
-			}
-			geoMap.Layers[layerName] = layer
+		layer, err := s.loadElementLayer(path, layerName, geoMap.NodeSize(), geoMap.Threshold())
+		if err != nil {
+			s.Logger.Error("load element layer failed", "path", path, "error", err)
+			continue
 		}
+		geoMap.Layers[layerName] = layer
 	}
 
 	geoMap.ResetChanged()
@@ -175,25 +166,6 @@ func (s *StorageManager) loadElementLayer(path string, name string, nodeSize int
 		Index: tree,
 	}
 	return layer, nil
-}
-
-func (s *StorageManager) loadSubmapLayer(dir string, layer *cache.Layer, parent *cache.GeoMap) error {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return fmt.Errorf("read submap dir %s: %w", dir, err)
-	}
-	for _, e := range entries {
-		if e.IsDir() && strings.HasSuffix(e.Name(), "."+cache.SubmapPrefix) {
-			smpDir := filepath.Join(dir, e.Name())
-			subMap, err := s.loadMap(smpDir, parent.Database)
-			if err != nil {
-				s.Logger.Error("load submap failed", "path", smpDir, "error", err)
-				continue
-			}
-			layer.AddElement(subMap)
-		}
-	}
-	return nil
 }
 
 // ---------- save ----------
@@ -248,25 +220,6 @@ func (s *StorageManager) WriteMap(parentDir string, m *cache.GeoMap) error {
 }
 
 func (s *StorageManager) writeLayer(parentDir string, layer *cache.Layer) error {
-	if layer.IsSubMap() {
-		layerDir := filepath.Join(parentDir, layer.Name+"."+cache.LayerPrefix)
-		if err := os.MkdirAll(layerDir, 0755); err != nil {
-			return fmt.Errorf("create submap layer dir: %w", err)
-		}
-		for _, elem := range layer.Elements() {
-			if subMap, ok := elem.(*cache.GeoMap); ok {
-				smpDir := filepath.Join(layerDir, subMap.Name+"."+cache.SubmapPrefix)
-				if err := os.MkdirAll(smpDir, 0755); err != nil {
-					return err
-				}
-				if err := s.WriteMap(smpDir, subMap); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	}
-
 	ser := &elementSerializer{}
 	data, err := rtree.SerializeToBytes[rtree.Rectangle](&layer.Index.RTree, "rstar", ser)
 	if err != nil {

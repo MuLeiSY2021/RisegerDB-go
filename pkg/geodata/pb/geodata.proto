@@ -28,14 +28,6 @@ message GeoMap {
   int32 node_size = 2;
   double threshold = 3;
   repeated GeoElement elements = 4;
-  repeated GeoSubmap submaps = 5;
-}
-
-message GeoSubmap {
-  string name = 1;
-  string scope_path = 2;
-  repeated GeoElement elements = 3;
-  repeated GeoSubmap submaps = 4;
 }
 
 message GeoElement {

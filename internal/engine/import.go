@@ -53,11 +53,6 @@ func (e *Engine) ImportGeoDataProto(data *gpb.GeoDataFile) (int, error) {
 				totalElements++
 			}
 
-			for _, sm := range gmap.Submaps {
-				n := importSubmap(m, sm, threshold)
-				totalElements += n
-			}
-
 			db.AddMap(m)
 		}
 
@@ -80,19 +75,6 @@ func (e *Engine) getOrCreateDatabase(name string) (*cache.Database, error) {
 	db.Activate()
 	e.Cache.AddDatabase(db)
 	return db, nil
-}
-
-func importSubmap(m *cache.GeoMap, sm *gpb.GeoSubmap, threshold float64) int {
-	count := 0
-	for _, elem := range sm.Elements {
-		e := protoToElement(elem, threshold)
-		m.AddElement(e)
-		count++
-	}
-	for _, child := range sm.Submaps {
-		count += importSubmap(m, child, threshold)
-	}
-	return count
 }
 
 func protoToModel(gm *gpb.GeoModel) *cache.Model {

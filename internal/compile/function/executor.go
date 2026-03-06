@@ -60,16 +60,6 @@ func eval(node *parser.Node, ctx *Context) error {
 		ctx.Threshold = m.Threshold()
 		return nil
 
-	case parser.NodeUseScope:
-		if err := eval(node.Children[0], ctx); err != nil {
-			return err
-		}
-		v := ctx.Pop()
-		if rect, ok := v.(rtree.Rectangle); ok {
-			ctx.Scope = rect
-		}
-		return nil
-
 	case parser.NodeUseModel:
 		if err := eval(node.Children[0], ctx); err != nil {
 			return err
@@ -524,9 +514,6 @@ func executeUpdate(node *parser.Node, ctx *Context) error {
 
 	updated := 0
 	for _, layer := range ctx.Map.ListLayers() {
-		if layer.IsSubMap() {
-			continue
-		}
 		for _, elem := range layer.Elements() {
 			subCtx := *ctx
 			subCtx.Stack = make([]interface{}, 0, 16)
@@ -606,9 +593,6 @@ func executeSearch(ctx *Context, columns []string, whereFn func(rtree.Rectangle)
 	}
 
 	for _, layer := range ctx.Map.ListLayers() {
-		if layer.IsSubMap() {
-			continue
-		}
 		for _, elem := range layer.Elements() {
 			if whereFn != nil && !whereFn(elem) {
 				continue

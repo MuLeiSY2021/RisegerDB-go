@@ -128,7 +128,6 @@ func TestGeoMap(t *testing.T) {
 func TestLayer(t *testing.T) {
 	layer := NewLayer("mdl_building", 4, 0.5)
 	assert.True(t, layer.IsModel())
-	assert.False(t, layer.IsSubMap())
 	assert.False(t, layer.IsChanged())
 
 	elem := NewElement(5, 5, 15, 15, 0.5, "point", "building")

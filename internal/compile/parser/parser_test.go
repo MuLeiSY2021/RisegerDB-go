@@ -108,14 +108,6 @@ func TestParseCoord(t *testing.T) {
 	assert.Equal(t, NodeCoordToRect, in.Children[0].Type)
 }
 
-func TestParseRect(t *testing.T) {
-	ast, err := Parse("USE SCOPE RECT([5, 5], 100)")
-	require.NoError(t, err)
-	scope := ast.Children[0]
-	assert.Equal(t, NodeUseScope, scope.Type)
-	assert.Equal(t, NodeRect, scope.Children[0].Type)
-}
-
 func TestParseDotString(t *testing.T) {
 	ast, err := Parse("SEARCH a.b.c")
 	require.NoError(t, err)

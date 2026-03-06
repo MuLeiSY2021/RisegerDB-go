@@ -2,7 +2,6 @@ package function
 
 import (
 	"github.com/riseger/riseger-go/internal/cache"
-	"github.com/riseger/riseger-go/pkg/rtree"
 )
 
 // PreloadFunc is a callback that the engine registers so the executor
@@ -21,7 +20,6 @@ type Context struct {
 	Database  *cache.Database
 	Map       *cache.GeoMap
 	Models    []string
-	Scope     rtree.Rectangle
 	Threshold float64
 
 	Stack          []interface{}

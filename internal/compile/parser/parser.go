@@ -37,7 +37,6 @@ import (
 //	use_clause      →  use_item ( '|' use_item )*
 //	use_item        →  DATABASE  string_value       -- 选择数据库
 //	                 |  MAP      string_value       -- 选择地图
-//	                 |  SCOPE    rect_expr          -- 设定查询范围（矩形）
 //	                 |  MODEL    strings_expr       -- 选择数据模型
 //
 // ── SEARCH 查询 ───────────────────────────────────────────────────────
@@ -263,14 +262,6 @@ func (p *Parser) parseUseItem() (*Node, error) {
 		}
 		return newNode(NodeUseMap, s), nil
 
-	case tok.IsKeyword("SCOPE"):
-		p.advance()
-		r, err := p.parseRectExpr()
-		if err != nil {
-			return nil, err
-		}
-		return newNode(NodeUseScope, r), nil
-
 	case tok.IsKeyword("MODEL"):
 		p.advance()
 		s, err := p.parseStringsExpr()
@@ -280,7 +271,7 @@ func (p *Parser) parseUseItem() (*Node, error) {
 		return newNode(NodeUseModel, s), nil
 
 	default:
-		return nil, p.errorf("expected DATABASE, MAP, SCOPE, or MODEL in USE clause, got %s", tok)
+		return nil, p.errorf("expected DATABASE, MAP, or MODEL in USE clause, got %s", tok)
 	}
 }
 

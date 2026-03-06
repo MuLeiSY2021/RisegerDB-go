@@ -8,8 +8,6 @@ import (
 )
 
 // Layer groups elements indexed by an R*-tree.
-// A layer whose name starts with "smp" is a submap layer (contains GeoMaps),
-// otherwise it is a model layer (contains Elements).
 type Layer struct {
 	Name    string
 	Index   *rtree.RStarTree[rtree.Rectangle]
@@ -22,10 +20,6 @@ func NewLayer(name string, nodeSize int, threshold float64) *Layer {
 		Name:  name,
 		Index: rtree.NewRStarTree[rtree.Rectangle](nodeSize, threshold),
 	}
-}
-
-func (l *Layer) IsSubMap() bool {
-	return strings.HasPrefix(l.Name, SubmapPrefix)
 }
 
 func (l *Layer) IsModel() bool {

@@ -259,15 +259,13 @@ func generateSmallGeoData() *gpb.GeoDataFile {
 
 func buildGeoData(dbName, mapName string, provinces map[string][]string, buildingsPerArea int) *gpb.GeoDataFile {
 	rng := rand.New(rand.NewSource(42))
-	var submaps []*gpb.GeoSubmap
+	var elements []*gpb.GeoElement
 	for province, areas := range provinces {
-		ps := &gpb.GeoSubmap{Name: province, ScopePath: "province_scope"}
 		for _, area := range areas {
-			as := &gpb.GeoSubmap{Name: area, ScopePath: "province_scope.area_scope"}
 			for i := 0; i < buildingsPerArea; i++ {
 				x := rng.Float64() * 10000
 				y := rng.Float64() * 10000
-				as.Elements = append(as.Elements, &gpb.GeoElement{
+				elements = append(elements, &gpb.GeoElement{
 					ModelName:   "building_model",
 					ParentModel: "field",
 					Coords:      []*gpb.GeoCoord{{X: x, Y: y}, {X: x + 50, Y: y + 50}},
@@ -278,9 +276,7 @@ func buildGeoData(dbName, mapName string, provinces map[string][]string, buildin
 					},
 				})
 			}
-			ps.Submaps = append(ps.Submaps, as)
 		}
-		submaps = append(submaps, ps)
 	}
 
 	return &gpb.GeoDataFile{
@@ -291,7 +287,7 @@ func buildGeoData(dbName, mapName string, provinces map[string][]string, buildin
 				Parameters: map[string]string{"name": "STRING", "address": "STRING", "floorArea": "DOUBLE"},
 			}},
 			Maps: []*gpb.GeoMap{{
-				Name: mapName, NodeSize: 4, Threshold: 0.5, Submaps: submaps,
+				Name: mapName, NodeSize: 4, Threshold: 0.5, Elements: elements,
 			}},
 		}},
 	}
