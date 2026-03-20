@@ -85,8 +85,10 @@ func eval(node *parser.Node, ctx *Context) error {
 		}
 
 		var whereFn func(elem rtree.Rectangle) bool
+		var scopes []*rtree.Rect
 		if len(node.Children) > 1 {
 			whereNode := node.Children[1]
+			scopes = ExtractScopes(whereNode, ctx.Threshold)
 			whereFn = func(elem rtree.Rectangle) bool {
 				subCtx := *ctx
 				subCtx.Stack = make([]interface{}, 0, 16)
@@ -98,7 +100,7 @@ func eval(node *parser.Node, ctx *Context) error {
 			}
 		}
 
-		ctx.Result = executeSearch(ctx, colNames, whereFn)
+		ctx.Result = executeSearch(ctx, colNames, whereFn, scopes)
 		return nil
 
 	case parser.NodeWhere:
@@ -512,9 +514,11 @@ func executeUpdate(node *parser.Node, ctx *Context) error {
 		assignments = append(assignments, assignment{attr: attrName, value: value})
 	}
 
+	scopes := ExtractScopes(whereNode, ctx.Threshold)
+
 	updated := 0
 	for _, layer := range ctx.Map.ListLayers() {
-		for _, elem := range layer.Elements() {
+		for _, elem := range layerElements(layer, scopes) {
 			subCtx := *ctx
 			subCtx.Stack = make([]interface{}, 0, 16)
 			subCtx.Push(elem)
@@ -558,8 +562,10 @@ func executeDelete(node *parser.Node, ctx *Context) error {
 		return nil
 	}
 
+	scopes := ExtractScopes(whereNode, ctx.Threshold)
+
 	var toDelete []rtree.Rectangle
-	for _, elem := range layer.Elements() {
+	for _, elem := range layerElements(layer, scopes) {
 		subCtx := *ctx
 		subCtx.Stack = make([]interface{}, 0, 16)
 		subCtx.Push(elem)
@@ -584,7 +590,7 @@ func executeDelete(node *parser.Node, ctx *Context) error {
 	return nil
 }
 
-func executeSearch(ctx *Context, columns []string, whereFn func(rtree.Rectangle) bool) *ResultSet {
+func executeSearch(ctx *Context, columns []string, whereFn func(rtree.Rectangle) bool, scopes []*rtree.Rect) *ResultSet {
 	rs := NewResultSet()
 	rs.Columns = columns
 
@@ -593,7 +599,7 @@ func executeSearch(ctx *Context, columns []string, whereFn func(rtree.Rectangle)
 	}
 
 	for _, layer := range ctx.Map.ListLayers() {
-		for _, elem := range layer.Elements() {
+		for _, elem := range layerElements(layer, scopes) {
 			if whereFn != nil && !whereFn(elem) {
 				continue
 			}
@@ -608,4 +614,30 @@ func executeSearch(ctx *Context, columns []string, whereFn func(rtree.Rectangle)
 		}
 	}
 	return rs
+}
+
+// layerElements returns elements from the layer using R-tree index lookups
+// when scopes are available, falling back to full scan when scopes is nil.
+// An empty (non-nil) scopes slice means zero results (impossible spatial condition).
+func layerElements(layer *cache.Layer, scopes []*rtree.Rect) []rtree.Rectangle {
+	if scopes == nil {
+		return layer.Elements()
+	}
+	if len(scopes) == 0 {
+		return nil
+	}
+	if len(scopes) == 1 {
+		return layer.Search(scopes[0])
+	}
+	seen := make(map[rtree.Rectangle]struct{})
+	var result []rtree.Rectangle
+	for _, scope := range scopes {
+		for _, elem := range layer.Search(scope) {
+			if _, ok := seen[elem]; !ok {
+				seen[elem] = struct{}{}
+				result = append(result, elem)
+			}
+		}
+	}
+	return result
 }
