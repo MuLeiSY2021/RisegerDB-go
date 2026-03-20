@@ -629,6 +629,11 @@ func layerElements(layer *cache.Layer, scopes []*rtree.Rect) []rtree.Rectangle {
 	if len(scopes) == 1 {
 		return layer.Search(scopes[0])
 	}
+	// Dedup relies on pointer identity: rtree.Rectangle is an interface, so
+	// the map key comparison uses (type, pointer). Two distinct *cache.Element
+	// values are never equal even if coordinates match, which is the desired
+	// behavior — we only need to suppress the same pointer returned by
+	// overlapping scope searches.
 	seen := make(map[rtree.Rectangle]struct{})
 	var result []rtree.Rectangle
 	for _, scope := range scopes {

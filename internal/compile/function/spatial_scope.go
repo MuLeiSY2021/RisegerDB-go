@@ -39,7 +39,7 @@ func extractFromNode(node *parser.Node, threshold float64) []*rtree.Rect {
 		var result []*rtree.Rect
 		for _, l := range left {
 			for _, r := range right {
-				inter := intersectRects(l, r, threshold)
+				inter := intersectRects(l, r)
 				if inter != nil {
 					result = append(result, inter)
 				}
@@ -162,7 +162,7 @@ func evalStaticBinop(node *parser.Node, op func(a, b float64) float64) float64 {
 
 // intersectRects computes the intersection of two rectangles.
 // Returns nil if they do not overlap (empty intersection).
-func intersectRects(a, b *rtree.Rect, threshold float64) *rtree.Rect {
+func intersectRects(a, b *rtree.Rect) *rtree.Rect {
 	minX := math.Max(a.MinX(), b.MinX())
 	minY := math.Max(a.MinY(), b.MinY())
 	maxX := math.Min(a.MaxX(), b.MaxX())
@@ -170,7 +170,7 @@ func intersectRects(a, b *rtree.Rect, threshold float64) *rtree.Rect {
 	if minX > maxX || minY > maxY {
 		return nil
 	}
-	return rtree.NewRect(minX, minY, maxX, maxY, threshold)
+	return rtree.NewRect(minX, minY, maxX, maxY, 0) // no truncation on search scope
 }
 
 // expandScope expands each side of the rectangle by threshold so that

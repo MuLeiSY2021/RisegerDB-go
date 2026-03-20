@@ -28,6 +28,8 @@ message GeoMap {
   int32 node_size = 2;
   double threshold = 3;
   repeated GeoElement elements = 4;
+  reserved 5;              // formerly submaps (GeoSubmap), removed in flat-layer refactor
+  reserved "submaps";
 }
 
 message GeoElement {
