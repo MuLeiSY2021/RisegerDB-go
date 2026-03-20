@@ -86,7 +86,6 @@ func (t FieldType) IsKey() bool {
 
 // File/directory naming constants matching the Java Constant class.
 const (
-	SubmapPrefix   = "smp"
 	MapPrefix      = "mp"
 	ModelPrefix    = "mdl"
 	DatabasePrefix = "db"

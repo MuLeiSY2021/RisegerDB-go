@@ -8,8 +8,6 @@ import (
 )
 
 // GeoMap represents a geographic map containing layers.
-// It is itself a Rectangle so it can be stored in a parent layer's R-tree
-// (as a submap entry).
 type GeoMap struct {
 	rtree.Rect
 	Name     string
@@ -73,10 +71,6 @@ func (m *GeoMap) GetLayer(name string) (*Layer, bool) {
 
 func (m *GeoMap) ElementLayerName(modelName string) string {
 	return ModelPrefix + "_" + modelName
-}
-
-func (m *GeoMap) SubmapLayerName(scopeName string) string {
-	return SubmapPrefix + "_" + scopeName
 }
 
 // AddElement adds an element to the appropriate model layer.

@@ -8,7 +8,6 @@ const (
 	NodeUse
 	NodeUseDatabase
 	NodeUseMap
-	NodeUseScope
 	NodeUseModel
 	NodeSearch
 	NodeUpdate
@@ -56,7 +55,7 @@ const (
 )
 
 var nodeTypeNames = [...]string{
-	"SQL", "Use", "UseDatabase", "UseMap", "UseScope", "UseModel",
+	"SQL", "Use", "UseDatabase", "UseMap", "UseModel",
 	"Search", "Update", "UpdateClause", "Where", "Preload",
 	"GetDatabases", "GetMaps", "GetModels",
 	"CreateDatabase", "CreateMap", "CreateModel", "CreateModelParam", "Delete",
